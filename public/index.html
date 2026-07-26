@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>مِشاهدة — شاهد واربح</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="login-screen" class="screen">
+  <div class="card login-card">
+    <div class="logo">🪙 مِشاهدة</div>
+    <p class="sub">شاهد الإعلانات واربح رصيدًا حقيقيًا</p>
+
+    <div id="auth-error" class="error-msg" style="display:none;"></div>
+
+    <form id="login-form">
+      <input id="login-username" placeholder="اسم المستخدم" autocomplete="username" required />
+      <input id="login-password" type="password" placeholder="كلمة المرور" autocomplete="current-password" required />
+      <button type="submit" class="btn-primary">دخول</button>
+    </form>
+
+    <div class="switch-line">
+      ليس لديك حساب؟ <a href="#" id="show-register">أنشئ حسابًا</a>
+    </div>
+  </div>
+
+  <div class="card login-card" id="register-card" style="display:none;">
+    <div class="logo">🪙 مِشاهدة</div>
+    <p class="sub">إنشاء حساب جديد</p>
+    <div id="register-error" class="error-msg" style="display:none;"></div>
+    <form id="register-form">
+      <input id="reg-username" placeholder="اسم المستخدم (أحرف إنجليزية/أرقام)" required />
+      <input id="reg-password" type="password" placeholder="كلمة المرور (6 أحرف على الأقل)" required />
+      <button type="submit" class="btn-primary">إنشاء الحساب</button>
+    </form>
+    <div class="switch-line">
+      لديك حساب؟ <a href="#" id="show-login">سجّل الدخول</a>
+    </div>
+  </div>
+</div>
+
+<div id="app-screen" class="screen" style="display:none;">
+  <div class="shell">
+    <header>
+      <div class="brand">🪙 <span>مِشاهدة</span></div>
+      <div class="user-chip">
+        <span class="muted">مرحبًا</span>
+        <span id="user-name" class="bold"></span>
+        <button id="logout-btn" class="link-btn">خروج</button>
+      </div>
+    </header>
+
+    <section class="balance-hero">
+      <div class="muted">رصيدك الحالي</div>
+      <div id="balance-number" class="balance-number">$0.0000</div>
+      <div class="muted small">كل مشاهدة تضيف مبلغًا صغيرًا لرصيدك</div>
+    </section>
+
+    <section class="card" id="offerwall-section" style="display:none;">
+      <div class="card-title">🌐 عروض حقيقية (شبكة إعلانات)</div>
+      <div class="muted small" style="margin-bottom:10px;">أكمل أي عرض بالأسفل لتربح رصيدًا فعليًا</div>
+      <iframe id="offerwall-frame" style="width:100%; height:500px; border:none; border-radius:12px;"></iframe>
+    </section>
+
+    <section class="card" id="demo-notice" style="text-align:center; display:none;">
+      <div class="muted small">لم يتم ربط شبكة إعلانات حقيقية بعد — القسم أدناه محاكاة توضيحية فقط</div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <div class="card-title">▶ شاهد إعلانًا</div>
+        <div class="dial-wrap">
+          <svg viewBox="0 0 120 120" width="140" height="140">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="#213026" stroke-width="10"/>
+            <circle id="dial-progress" cx="60" cy="60" r="52" fill="none" stroke="#C9A227" stroke-width="10"
+              stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"
+              transform="rotate(-90 60 60)" />
+            <text id="dial-text" x="60" y="66" text-anchor="middle" font-size="20" fill="#EDF3EE">▶</text>
+          </svg>
+        </div>
+        <button id="watch-btn" class="btn-primary">ابدأ المشاهدة</button>
+        <div id="ad-msg" class="hint"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💼 السحب</div>
+        <div class="muted small" id="withdraw-info">الحد الأدنى للسحب: $5</div>
+        <div class="progress-track"><div id="withdraw-fill" class="progress-fill"></div></div>
+        <div class="muted small" id="withdraw-label">$0.00 / $5</div>
+        <button id="withdraw-btn" class="btn-secondary">طلب سحب</button>
+        <div id="withdraw-msg" class="hint"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">🕒 سجل المشاهدات</div>
+      <div id="history-list"><div class="muted">جارٍ التحميل...</div></div>
+    </section>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
