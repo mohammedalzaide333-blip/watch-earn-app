@@ -6,7 +6,7 @@ const rateLimit = require("express-rate-limit");
 const { init } = require("./db");
 
 const authRoutes = require("./routes/auth");
-const adsRoutes = require("./routes/ads");
+const adsRoutes = require("./routes/tasks");
 const walletRoutes = require("./routes/wallet");
 const postbackRoutes = require("./routes/postback");
 const offerwallRoutes = require("./routes/offerwall");
@@ -27,7 +27,7 @@ const generalLimiter = rateLimit({
 app.use("/api", generalLimiter);
 
 app.use("/api/auth", authRoutes);
-app.use("/api/ads", adsRoutes);
+app.use("/api/tasks", adsRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/offerwall", offerwallRoutes);
 // ملاحظة: postback بدون JWT عمدًا، لأن الذي يستدعيه هو خادم شبكة الإعلانات وليس متصفح المستخدم
