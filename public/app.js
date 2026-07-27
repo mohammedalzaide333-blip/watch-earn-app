@@ -145,7 +145,7 @@ function updateWithdrawBar(balance, min) {
 }
 
 async function loadHistory() {
-  const data = await api("/ads/history");
+  const data = await api("/tasks/history");
   const list = $("history-list");
   if (!data.history.length) {
     list.innerHTML = '<div class="muted">لم تشاهد أي إعلان بعد</div>';
@@ -166,9 +166,9 @@ const CIRC = 2 * Math.PI * 52;
 
 $("watch-btn").addEventListener("click", async () => {
   if (watching) return;
-  $("ad-msg").textContent = "";
+ $("task-msg").textContent = "";
   try {
-    const data = await api("/ads/start", { method: "POST" });
+    const data = await api("/tasks/start", { method: "POST" });
     currentSessionId = data.sessionId;
     durationSeconds = data.durationSeconds;
     watching = true;
@@ -185,17 +185,17 @@ $("watch-btn").addEventListener("click", async () => {
       if (pct >= 100) {
         clearInterval(timer);
         try {
-          const result = await api("/ads/complete", {
+          const result = await api("/tasks/complete", {
             method: "POST",
             body: JSON.stringify({ sessionId: currentSessionId }),
           });
           updateBalance(result.balance);
-          $("ad-msg").textContent = `+$${result.amount.toFixed(3)} أُضيفت لرصيدك`;
+         $("task-msg").textContent = `+$${result.amount.toFixed(3)} أُضيفت لرصيدك`;
           loadHistory();
           const wallet = await api("/wallet");
           updateWithdrawBar(wallet.balance, wallet.minWithdraw);
         } catch (err) {
-          $("ad-msg").textContent = err.message;
+        $("task-msg").textContent = err.message;
         }
         watching = false;
         $("watch-btn").disabled = false;
@@ -207,7 +207,7 @@ $("watch-btn").addEventListener("click", async () => {
       }
     }, 100);
   } catch (err) {
-    $("ad-msg").textContent = err.message;
+   $("task-msg").textContent = err.message;
     watching = false;
     $("watch-btn").disabled = false;
     $("watch-btn").textContent = "ابدأ المشاهدة";
