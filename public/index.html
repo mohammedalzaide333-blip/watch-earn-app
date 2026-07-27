@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -83,6 +84,7 @@
           </svg>
         </div>
         <button id="watch-btn" class="btn-primary">ابدأ المشاهدة</button>
+        <button id="reels-open-btn" class="btn-secondary" style="margin-top:8px;">🎬 وضع المشاهدة المستمر</button>
         <div id="task-msg" class="hint"></div>
       </div>
 
@@ -101,6 +103,23 @@
       <div id="history-list"><div class="muted">جارٍ التحميل...</div></div>
     </section>
   </div>
+</div>
+
+<div id="reels-screen" class="reels-screen" style="display:none;">
+  <button id="reels-close" class="reels-close">✕</button>
+  <div id="reels-balance" class="reels-balance">$0.0000</div>
+
+  <div id="reels-card" class="reels-card">
+    <div id="reels-emoji" class="reels-emoji">🎬</div>
+    <div id="reels-title" class="reels-title">جارٍ التحميل...</div>
+    <div id="reels-earn" class="reels-earn"></div>
+  </div>
+
+  <div class="reels-progress-track">
+    <div id="reels-progress-fill" class="reels-progress-fill"></div>
+  </div>
+
+  <div id="reels-msg" class="reels-msg"></div>
 </div>
 
 <script src="app.js"></script>
