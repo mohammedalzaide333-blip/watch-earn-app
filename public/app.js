@@ -166,7 +166,7 @@ const CIRC = 2 * Math.PI * 52;
 
 $("watch-btn").addEventListener("click", async () => {
   if (watching) return;
- $("task-msg").textContent = "";
+  $("task-msg").textContent = "";
   try {
     const data = await api("/tasks/start", { method: "POST" });
     currentSessionId = data.sessionId;
@@ -190,12 +190,12 @@ $("watch-btn").addEventListener("click", async () => {
             body: JSON.stringify({ sessionId: currentSessionId }),
           });
           updateBalance(result.balance);
-         $("task-msg").textContent = `+$${result.amount.toFixed(3)} أُضيفت لرصيدك`;
+          $("task-msg").textContent = `+$${result.amount.toFixed(3)} أُضيفت لرصيدك`;
           loadHistory();
           const wallet = await api("/wallet");
           updateWithdrawBar(wallet.balance, wallet.minWithdraw);
         } catch (err) {
-        $("task-msg").textContent = err.message;
+          $("task-msg").textContent = err.message;
         }
         watching = false;
         $("watch-btn").disabled = false;
@@ -207,7 +207,7 @@ $("watch-btn").addEventListener("click", async () => {
       }
     }, 100);
   } catch (err) {
-   $("task-msg").textContent = err.message;
+    $("task-msg").textContent = err.message;
     watching = false;
     $("watch-btn").disabled = false;
     $("watch-btn").textContent = "ابدأ المشاهدة";
@@ -227,3 +227,101 @@ $("withdraw-btn").addEventListener("click", async () => {
     $("withdraw-msg").textContent = err.message;
   }
 });
+
+// ---------- وضع المشاهدة المستمر (يشبه تيك توك: ينتقل تلقائيًا للإعلان التالي) ----------
+const REELS_THEMES = [
+  { emoji: "🎮", title: "عرض ألعاب" },
+  { emoji: "🛍️", title: "عرض تسوّق" },
+  { emoji: "🎵", title: "تطبيق موسيقى" },
+  { emoji: "📱", title: "تطبيق جديد" },
+  { emoji: "🍔", title: "عرض طعام" },
+  { emoji: "🎬", title: "فيديو ترويجي" },
+];
+
+let reelsRunning = false;
+let reelsThemeIndex = 0;
+let reelsAnimFrame = null;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function renderReelsCard() {
+  const theme = REELS_THEMES[reelsThemeIndex % REELS_THEMES.length];
+  reelsThemeIndex++;
+  const card = $("reels-card");
+  card.style.animation = "none";
+  void card.offsetWidth;
+  card.style.animation = "";
+  $("reels-emoji").textContent = theme.emoji;
+  $("reels-title").textContent = theme.title;
+  $("reels-earn").textContent = "";
+}
+
+function animateReelsProgress(durationSeconds) {
+  return new Promise((resolve) => {
+    const fill = $("reels-progress-fill");
+    fill.style.width = "0%";
+    const startedAt = Date.now();
+
+    function tick() {
+      if (!reelsRunning) return resolve(false);
+      const elapsed = (Date.now() - startedAt) / 1000;
+      const pct = Math.min(100, (elapsed / durationSeconds) * 100);
+      fill.style.width = pct + "%";
+      if (pct >= 100) {
+        resolve(true);
+      } else {
+        reelsAnimFrame = requestAnimationFrame(tick);
+      }
+    }
+    tick();
+  });
+}
+
+async function reelsLoop() {
+  while (reelsRunning) {
+    try {
+      $("reels-msg").textContent = "";
+      const data = await api("/tasks/start", { method: "POST" });
+      renderReelsCard();
+
+      const finished = await animateReelsProgress(data.durationSeconds);
+      if (!reelsRunning || !finished) break;
+
+      const result = await api("/tasks/complete", {
+        method: "POST",
+        body: JSON.stringify({ sessionId: data.sessionId }),
+      });
+
+      updateBalance(result.balance);
+      $("reels-balance").textContent = "$" + result.balance.toFixed(4);
+      $("reels-earn").textContent = `+$${result.amount.toFixed(3)}`;
+      loadHistory();
+      const wallet = await api("/wallet");
+      updateWithdrawBar(wallet.balance, wallet.minWithdraw);
+
+      await sleep(500);
+    } catch (err) {
+      $("reels-msg").textContent = err.message;
+      reelsRunning = false;
+      break;
+    }
+  }
+}
+
+function openReels() {
+  reelsRunning = true;
+  $("reels-screen").style.display = "flex";
+  $("reels-balance").textContent = $("balance-number").textContent;
+  reelsLoop();
+}
+
+function closeReels() {
+  reelsRunning = false;
+  if (reelsAnimFrame) cancelAnimationFrame(reelsAnimFrame);
+  $("reels-screen").style.display = "none";
+}
+
+$("reels-open-btn").addEventListener("click", openReels);
+$("reels-close").addEventListener("click", closeReels);
