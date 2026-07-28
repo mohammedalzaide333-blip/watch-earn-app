@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>لوحة الإدارة — مِشاهدة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+<style>
+  .admin-wrap{max-width:800px; margin:0 auto; padding:24px 16px;}
+  .admin-table{width:100%; border-collapse:collapse; font-size:13px; margin-top:10px;}
+  .admin-table th, .admin-table td{padding:8px 10px; text-align:right; border-bottom:1px solid var(--surface-light);}
+  .admin-table th{color:var(--muted); font-weight:600;}
+  .status-pending{color:#e0b341;}
+  .status-approved{color:var(--teal);}
+  .status-rejected{color:#e06868;}
+  .mini-btn{background:var(--teal); color:#06231a; border:none; border-radius:6px; padding:5px 10px; font-size:12px; cursor:pointer; font-family:inherit; margin-inline-end:6px;}
+  .mini-btn.reject{background:#e06868; color:#2a0808;}
+  .admin-section{margin-bottom:36px;}
+</style>
+</head>
+<body>
+<div class="admin-wrap">
+  <h1 style="font-size:20px;">🛠️ لوحة الإدارة</h1>
+
+  <div id="admin-denied" class="card" style="display:none; text-align:center;">
+    <p>غير مصرح لك بالدخول لهذه الصفحة، أو لم تسجّل الدخول بعد.</p>
+    <a href="/" style="color:var(--teal);">العودة للموقع</a>
+  </div>
+
+  <div id="admin-content" style="display:none;">
+    <div class="admin-section">
+      <h2 style="font-size:16px; color:var(--gold);">طلبات السحب</h2>
+      <div id="withdrawals-table"></div>
+    </div>
+
+    <div class="admin-section">
+      <h2 style="font-size:16px; color:var(--gold);">كل المستخدمين</h2>
+      <div id="users-table"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem("wa_token");
+
+  async function adminApi(path, opts = {}) {
+    const res = await fetch("/api/admin" + path, {
+      ...opts,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+        ...(opts.headers || {}),
+      },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "حدث خطأ");
+    return data;
+  }
+
+  function statusLabel(status) {
+    if (status === "pending") return '<span class="status-pending">قيد الانتظار</span>';
+    if (status === "approved") return '<span class="status-approved">تم الدفع</span>';
+    return '<span class="status-rejected">مرفوض</span>';
+  }
+
+  async function loadWithdrawals() {
+    const data = await adminApi("/withdrawals");
+    const el = document.getElementById("withdrawals-table");
+    if (!data.withdrawals.length) {
+      el.innerHTML = '<p class="muted">لا توجد طلبات سحب بعد</p>';
+      return;
+    }
+    el.innerHTML = `
+      <table class="admin-table">
+        <thead>
+          <tr><th>المستخدم</th><th>البريد</th><th>المبلغ</th><th>الحالة</th><th>التاريخ</th><th>إجراء</th></tr>
+        </thead>
+        <tbody>
+        ${data.withdrawals
+            .map(
+              (w) => `
+            <tr>
+              <td>${w.username}</td>
+              <td>${w.email || "—"}</td>
+              <td>$${w.amount.toFixed(2)}</td>
+              <td>${statusLabel(w.status)}</td>
+              <td>${new Date(w.requested_at).toLocaleDateString("ar-EG")}</td>
+              <td>
+                ${
+                  w.status === "pending"
+                    ? `<button class="mini-btn" onclick="approveWithdrawal(${w.id})">تم الدفع</button>
+                       <button class="mini-btn reject" onclick="rejectWithdrawal(${w.id})">رفض</button>`
+                    : "—"
+                }
+              </td>
+            </tr>`
+            )
+            .join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  async function loadUsers() {
+    const data = await adminApi("/users");
+    const el = document.getElementById("users-table");
+    el.innerHTML = `
+      <table class="admin-table">
+        <thead>
+          <tr><th>اسم المستخدم</th><th>البريد</th><th>الرصيد</th><th>تاريخ التسجيل</th></tr>
+        </thead>
+        <tbody>
+          ${data.users
+            .map(
+              (u) => `
+            <tr>
+              <td>${u.username}</td>
+              <td>${u.email || "—"}</td>
+              <td>$${u.balance.toFixed(4)}</td>
+              <td>${new Date(u.created_at).toLocaleDateString("ar-EG")}</td>
+            </tr>`
+            )
+            .join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  async function approveWithdrawal(id) {
+    if (!confirm("هل دفعت هذا المبلغ فعليًا للمستخدم؟")) return;
+    await adminApi(`/withdrawals/${id}/approve`, { method: "POST" });
+    loadWithdrawals();
+  }
+
+  async function rejectWithdrawal(id) {
+    if (!confirm("سيتم إعادة المبلغ لرصيد المستخدم. متابعة؟")) return;
+    await adminApi(`/withdrawals/${id}/reject`, { method: "POST" });
+    loadWithdrawals();
+    loadUsers();
+  }
+
+  async function init() {
+    if (!token) {
+      document.getElementById("admin-denied").style.display = "block";
+      return;
+    }
+    try {
+      await loadWithdrawals();
+      await loadUsers();
+      document.getElementById("admin-content").style.display = "block";
+    } catch (err) {
+      document.getElementById("admin-denied").style.display = "block";
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
