@@ -10,6 +10,7 @@ const adsRoutes = require("./routes/tasks");
 const walletRoutes = require("./routes/wallet");
 const postbackRoutes = require("./routes/postback");
 const offerwallRoutes = require("./routes/offerwall");
+const adminRoutes = require("./routes/admin");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,6 +31,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/tasks", adsRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/offerwall", offerwallRoutes);
+app.use("/api/admin", adminRoutes);
 // ملاحظة: postback بدون JWT عمدًا، لأن الذي يستدعيه هو خادم شبكة الإعلانات وليس متصفح المستخدم
 app.use("/api/postback", postbackRoutes);
 
