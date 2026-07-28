@@ -93,7 +93,6 @@ $("login-form").addEventListener("submit", async (e) => {
     $("auth-error").style.display = "block";
   }
 });
-
 $("register-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   $("register-error").style.display = "none";
@@ -104,6 +103,7 @@ $("register-form").addEventListener("submit", async (e) => {
         username: $("reg-username").value.trim(),
         password: $("reg-password").value,
         email: $("reg-email").value.trim() || undefined,
+        captchaToken: typeof grecaptcha !== "undefined" ? grecaptcha.getResponse() : undefined,
       }),
     });
     token = data.token;
@@ -112,9 +112,9 @@ $("register-form").addEventListener("submit", async (e) => {
   } catch (err) {
     $("register-error").textContent = err.message;
     $("register-error").style.display = "block";
+    if (typeof grecaptcha !== "undefined") grecaptcha.reset();
   }
 });
-
 $("forgot-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   $("forgot-error").style.display = "none";
