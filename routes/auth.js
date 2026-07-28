@@ -5,14 +5,31 @@ const crypto = require("crypto");
 const { pool } = require("../db");
 const { requireAuth } = require("../middleware/auth");
 const { sendResetEmail } = require("../mailer");
-
 const router = express.Router();
 
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+async function verifyCaptcha(token) {
+  if (!process.env.RECAPTCHA_SECRET_KEY) return true;
+  if (!token) return false;
+
+  try {
+    const res = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`,
+    });
+    const data = await res.json();
+    return data.success === true;
+  } catch (err) {
+    console.error("recaptcha verify error:", err);
+    return false;
+  }
+}
+
 router.post("/register", async (req, res) => {
-  const { username, password, email } = req.body || {};
+  const { username, password, email, captchaToken } = req.body || {};
 
   if (!username || !password) {
     return res.status(400).json({ error: "الاسم وكلمة المرور مطلوبان" });
@@ -83,8 +100,13 @@ router.post("/login", async (req, res) => {
 // تحديث/إضافة البريد الإلكتروني للحساب الحالي (مطلوب لاستخدام استعادة كلمة المرور)
 router.post("/update-email", requireAuth, async (req, res) => {
   const { email } = req.body || {};
-  if (!email || !EMAIL_RE.test(email)) {
+if (email && !EMAIL_RE.test(email)) {
     return res.status(400).json({ error: "صيغة البريد الإلكتروني غير صحيحة" });
+  }
+
+  const captchaOk = await verifyCaptcha(captchaToken);
+  if (!captchaOk) {
+    return res.status(400).json({ error: "فشل التحقق من أنك لست روبوتًا، حاول مرة أخرى" });
   }
 
   try {
