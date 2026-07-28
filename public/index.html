@@ -103,7 +103,6 @@
       </form>
       <div id="email-msg" class="hint"></div>
     </section>
-
     <section class="grid">
       <div class="card">
         <div class="card-title">▶ شاهد إعلانًا</div>
@@ -123,4 +122,38 @@
 
       <div class="card">
         <div class="card-title">💼 السحب</div>
-        <div class="muted small" id="withdraw-info">الحد الأدنى للسحب:
+        <div class="muted small" id="withdraw-info">الحد الأدنى للسحب: $5</div>
+        <div class="progress-track"><div id="withdraw-fill" class="progress-fill"></div></div>
+        <div class="muted small" id="withdraw-label">$0.00 / $5</div>
+        <button id="withdraw-btn" class="btn-secondary">طلب سحب</button>
+        <div id="withdraw-msg" class="hint"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">🕒 سجل المشاهدات</div>
+      <div id="history-list"><div class="muted">جارٍ التحميل...</div></div>
+    </section>
+  </div>
+</div>
+
+<div id="reels-screen" class="reels-screen" style="display:none;">
+  <button id="reels-close" class="reels-close">✕</button>
+  <div id="reels-balance" class="reels-balance">$0.0000</div>
+
+  <div id="reels-card" class="reels-card">
+    <div id="reels-emoji" class="reels-emoji">🎬</div>
+    <div id="reels-title" class="reels-title">جارٍ التحميل...</div>
+    <div id="reels-earn" class="reels-earn"></div>
+  </div>
+
+  <div class="reels-progress-track">
+    <div id="reels-progress-fill" class="reels-progress-fill"></div>
+  </div>
+
+  <div id="reels-msg" class="reels-msg"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
